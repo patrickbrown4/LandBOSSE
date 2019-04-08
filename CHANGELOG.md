@@ -1,7 +1,0 @@
-# [YourCode] Changelog
-
-## 0.1.0 ([ReleaseDate])
-
-[YourName] <[YourEmailAddress]>
-
-- initial relase
