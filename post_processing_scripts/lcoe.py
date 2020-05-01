@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # Select every row from the LandBOSSE output.
     # Only select the needed columns, convert MW to kW and rename the columns
     # to be consistent with the AEP and TCC data.
-    bos = pd.read_excel('landbosse-output.xlsx', 'costs_by_module_type_operation')
+    bos = pd.read_csv('landbosse-costs.csv')
     bos = bos[['Number of turbines', 'Turbine rating MW', 'Rotor diameter m', 'Cost per project']]
     bos['Rating [kW]'] = bos['Turbine rating MW'] * 1000
     bos.rename(columns={'Rotor diameter m': 'Rotor Diam [m]', 'Cost per project': 'BOS Capex [USD]'}, inplace=True)
