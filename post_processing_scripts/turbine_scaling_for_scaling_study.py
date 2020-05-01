@@ -14,7 +14,7 @@ blade_number   = 3
 
 # These will give turbines that match the scaling study.
 # They will be further filtered by the specific power
-machine_rating = 1e6 * np.array([1.5, 2.0, 2.5, 3.5, 5.0, 6.0, 10.0]) # mW
+machine_rating = 1e3 * np.array([1.5, 2.0, 2.5, 3.5, 5.0, 6.0, 10.0]) # kW
 rotor_diameter = np.array([91.0, 117.0, 105.0, 139.0, 166.0, 182.0, 235.0]) # m
 constant_specific_power = 230.0 # W / m^2
 
@@ -54,7 +54,7 @@ aep_instance = aep_csm()
 # Calculation loop
 for irating, rating in enumerate(machine_rating):
     for idiam, diam in enumerate(rotor_diameter):
-        specific_power = rating // (pi * (diam / 2) ** 2)
+        specific_power = rating * 1000 / (pi * (diam / 2) ** 2)
         if constant_specific_power - 5 < specific_power < constant_specific_power + 5:
             print(f'Calculating TR={rating} RD={diam} specific power={specific_power}')
             hub_height = diam + 20.0
