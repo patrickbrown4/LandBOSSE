@@ -1,4 +1,5 @@
 import csv
+from math import pi
 import numpy as np
 import openmdao.api as om
 
@@ -14,8 +15,8 @@ blade_number   = 3
 # These will give turbines that match the scaling study.
 # They will be further filtered by the specific power
 machine_rating = 1e6 * np.array([1.5, 2.0, 2.5, 3.5, 5.0, 6.0, 10.0]) # mW
-rotor_diameter = np.arange(100.0, 301.0, 20.0) # m
-specific_power = 230.0 # W / m^2
+rotor_diameter = np.array([91.0, 117.0, 105.0, 139.0, 166.0, 182.0, 235.0]) # m
+constant_specific_power = 230.0 # W / m^2
 
 blade_mass_exp = np.arange(1.7, 2.41, 0.1)
 max_tip_speed  = 90.0 # m/s
@@ -53,25 +54,28 @@ aep_instance = aep_csm()
 # Calculation loop
 for irating, rating in enumerate(machine_rating):
     for idiam, diam in enumerate(rotor_diameter):
-        hub_height = diam + 20.0
-        
-        for iexp, bexp in enumerate(blade_mass_exp):
-            prob_tcc['machine_rating'] = rating
-            prob_tcc['rotor_diameter'] = diam
-            prob_tcc['blade_user_exp'] = bexp
-            prob_tcc['hub_height']     = hub_height
-            
-            prob_tcc.run_model()
-            
-            tcc.append([rating, diam, bexp, float(prob_tcc['turbine_cost_kW']) ] )
-            
-        for iwind, wind in enumerate(wind_speed):
-            aep_instance.compute(rating, max_tip_speed, diam, max_Cp, opt_tsr,
-                cut_in, cut_out, hub_height, altitude, rho_air,
-                max_eff, rotor_Ct, soiling_losses, array_losses, availability,
-                turbine_number, shear_exp, wind, weibull_k)
-            
-            aep.append([rating, diam, wind, aep_instance.aep.net_aep])
+        specific_power = rating // (pi * (diam / 2) ** 2)
+        if constant_specific_power - 5 < specific_power < constant_specific_power + 5:
+            print(f'Calculating TR={rating} RD={diam} specific power={specific_power}')
+            hub_height = diam + 20.0
+
+            for iexp, bexp in enumerate(blade_mass_exp):
+                prob_tcc['machine_rating'] = rating
+                prob_tcc['rotor_diameter'] = diam
+                prob_tcc['blade_user_exp'] = bexp
+                prob_tcc['hub_height']     = hub_height
+
+                prob_tcc.run_model()
+
+                tcc.append([rating, diam, bexp, float(prob_tcc['turbine_cost_kW']) ] )
+
+            for iwind, wind in enumerate(wind_speed):
+                aep_instance.compute(rating, max_tip_speed, diam, max_Cp, opt_tsr,
+                    cut_in, cut_out, hub_height, altitude, rho_air,
+                    max_eff, rotor_Ct, soiling_losses, array_losses, availability,
+                    turbine_number, shear_exp, wind, weibull_k)
+
+                aep.append([rating, diam, wind, aep_instance.aep.net_aep])
 
             
 # Write out data to csv files
