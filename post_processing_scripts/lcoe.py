@@ -15,7 +15,7 @@ if __name__ == '__main__':
     bos.drop(columns=['Turbine rating MW'], inplace=True)
 
     # Aggregate and sum BOS costs
-    bos_sum = bos.groupby(['Rating [kW]', 'Rotor Diam [m]', 'Number of turbines', 'Hub height m']).sum().reset_index()
+    bos_sum = bos.groupby(['Rating [kW]', 'Rotor Diam [m]', 'Number of turbines', 'Hub height m', 'Labor cost multiplier', 'Crane breakdown fraction']).sum().reset_index()
 
     # Inner join AEP and TCC. Taken together, Rating [kW] and Rotor Diam [m]
     # are the key.
