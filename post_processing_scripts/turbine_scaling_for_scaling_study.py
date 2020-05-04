@@ -16,6 +16,7 @@ blade_number   = 3
 # They will be further filtered by the specific power
 machine_rating = 1e3 * np.array([1.5, 2.0, 2.5, 3.5, 5.0, 6.0, 10.0]) # kW
 rotor_diameter = np.array([91.0, 117.0, 105.0, 139.0, 166.0, 182.0, 235.0]) # m
+hub_height = np.array([80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 160.0, 180.0]) # m
 constant_specific_power = 230.0 # W / m^2
 
 blade_mass_exp = np.arange(1.7, 2.41, 0.1)
@@ -37,8 +38,8 @@ weibull_k      = 2.0
 wind_speed     = np.arange(5.0, 15.1, 1.0) # m/s
 
 # Output containers
-tcc = [['Rating [kW]','Rotor Diam [m]','Blade Mass Exp','TCC [USD/kW]']]
-aep = [['Rating [kW]','Rotor Diam [m]','Wind Speed [m/s]','AEP [kWh/yr]']]
+tcc = [['Rating [kW]','Rotor Diam [m]', 'Hub height [m]','Blade Mass Exp','TCC [USD/kW]']]
+aep = [['Rating [kW]','Rotor Diam [m]', 'Hub height [m]', 'Wind Speed [m/s]','AEP [kWh/yr]']]
 
 # Compute object instances
 prob_tcc = om.Problem()
@@ -56,26 +57,28 @@ for irating, rating in enumerate(machine_rating):
     for idiam, diam in enumerate(rotor_diameter):
         specific_power = rating * 1000 / (pi * (diam / 2) ** 2)
         if constant_specific_power - 5 < specific_power < constant_specific_power + 5:
-            print(f'Calculating TR={rating} RD={diam} specific power={specific_power}')
-            hub_height = diam + 20.0
+            for ihh, hh in enumerate(hub_height):
+                print(f'RD={diam}, HH={hh}, HH-RD={hh - diam / 2.0}')
+                if hh >= (diam / 2.0) + 20.0:
+                    print(f'Calculating TR={rating} RD={diam} HH={hh} specific power={specific_power}')
 
-            for iexp, bexp in enumerate(blade_mass_exp):
-                prob_tcc['machine_rating'] = rating
-                prob_tcc['rotor_diameter'] = diam
-                prob_tcc['blade_user_exp'] = bexp
-                prob_tcc['hub_height']     = hub_height
+                    for iexp, bexp in enumerate(blade_mass_exp):
+                        prob_tcc['machine_rating'] = rating
+                        prob_tcc['rotor_diameter'] = diam
+                        prob_tcc['blade_user_exp'] = bexp
+                        prob_tcc['hub_height']     = hh
 
-                prob_tcc.run_model()
+                        prob_tcc.run_model()
 
-                tcc.append([rating, diam, bexp, float(prob_tcc['turbine_cost_kW']) ] )
+                        tcc.append([rating, diam, hh, bexp, float(prob_tcc['turbine_cost_kW']) ] )
 
-            for iwind, wind in enumerate(wind_speed):
-                aep_instance.compute(rating, max_tip_speed, diam, max_Cp, opt_tsr,
-                    cut_in, cut_out, hub_height, altitude, rho_air,
-                    max_eff, rotor_Ct, soiling_losses, array_losses, availability,
-                    turbine_number, shear_exp, wind, weibull_k)
+                    for iwind, wind in enumerate(wind_speed):
+                        aep_instance.compute(rating, max_tip_speed, diam, max_Cp, opt_tsr,
+                            cut_in, cut_out, hh, altitude, rho_air,
+                            max_eff, rotor_Ct, soiling_losses, array_losses, availability,
+                            turbine_number, shear_exp, wind, weibull_k)
 
-                aep.append([rating, diam, wind, aep_instance.aep.net_aep])
+                        aep.append([rating, diam, hh, wind, aep_instance.aep.net_aep])
 
             
 # Write out data to csv files

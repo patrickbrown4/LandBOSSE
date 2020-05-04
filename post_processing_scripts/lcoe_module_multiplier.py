@@ -63,19 +63,23 @@ def main():
     print(f'Done modifying BOS data. New row count {len(bos)}')
 
     bos['Rating [kW]'] = bos['Turbine rating MW'] * 1000
-    bos.rename(columns={'Rotor diameter m': 'Rotor Diam [m]', 'Cost per project': 'BOS Capex [USD]'}, inplace=True)
+    bos.rename(columns={
+        'Rotor diameter m': 'Rotor Diam [m]',
+        'Cost per project': 'BOS Capex [USD]',
+        'Hub height m': 'Hub height [m]'
+    }, inplace=True)
     bos.drop(columns=['Turbine rating MW'], inplace=True)
 
     # Aggregate and sum BOS costs
     print('Aggregating BOS costs...')
     bos_sum = bos.groupby(
-        ['Rating [kW]', 'Rotor Diam [m]', 'Number of turbines', 'Hub height m', 'Labor cost multiplier',
+        ['Rating [kW]', 'Rotor Diam [m]', 'Number of turbines', 'Hub height [m]', 'Labor cost multiplier',
          'Crane breakdown fraction', 'FoundationCost multiplier']).sum().reset_index()
 
-    # Inner join AEP and TCC. Taken together, Rating [kW] and Rotor Diam [m]
+    # Inner join AEP and TCC. Taken together, Rating [kW] and Rotor Diam [m] and Hub height [m]
     # are the key.
     print('Joining AEP and TCC...')
-    aep_tcc = aep.merge(tcc, on=['Rating [kW]', 'Rotor Diam [m]'])
+    aep_tcc = aep.merge(tcc, on=['Rating [kW]', 'Rotor Diam [m]', 'Hub height [m]'])
 
     if len(aep_tcc) == 0:
         raise Exception('aep_tcc merge is empty')
@@ -84,7 +88,7 @@ def main():
     # Rotor Diam [m] as keys. This dataframe will eventually have the
     # LCOE as a column.
     print('Joining aep_tcc and bos_sum...')
-    lcoe = aep_tcc.merge(bos_sum, on=['Rating [kW]', 'Rotor Diam [m]'])
+    lcoe = aep_tcc.merge(bos_sum, on=['Rating [kW]', 'Rotor Diam [m]', 'Hub height [m]'])
 
     if len(bos_sum) == 0:
         raise Exception('bos_sum is empty.')
