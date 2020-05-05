@@ -35,7 +35,8 @@ availability   = 1.0
 soiling_losses = 0.0
 turbine_number = 1
 weibull_k      = 2.0
-wind_speed     = np.arange(5.0, 15.1, 1.0) # m/s
+# wind_speed     = np.arange(5.0, 15.1, 1.0) # m/s
+wind_speed     = np.array([5.0, 6.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0]) # m/s
 
 # Output containers
 tcc = [['Rating [kW]','Rotor Diam [m]', 'Hub height [m]','Blade Mass Exp','TCC [USD/kW]']]
@@ -58,8 +59,8 @@ for irating, rating in enumerate(machine_rating):
         specific_power = rating * 1000 / (pi * (diam / 2) ** 2)
         if constant_specific_power - 5 < specific_power < constant_specific_power + 5:
             for ihh, hh in enumerate(hub_height):
-                print(f'RD={diam}, HH={hh}, HH-RD={hh - diam / 2.0}')
-                if hh >= (diam / 2.0) + 20.0:
+                print(f'TR={rating} RD={diam}, HH={hh}, HH-RD/2={hh - diam / 2.0}')
+                if hh >= (diam / 2.0) + 12.5:
                     print(f'Calculating TR={rating} RD={diam} HH={hh} specific power={specific_power}')
 
                     for iexp, bexp in enumerate(blade_mass_exp):
