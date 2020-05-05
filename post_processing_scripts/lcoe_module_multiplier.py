@@ -88,7 +88,7 @@ def main():
     # Rotor Diam [m] as keys. This dataframe will eventually have the
     # LCOE as a column.
     print('Joining aep_tcc and bos_sum...')
-    lcoe = aep_tcc.merge(bos_sum, on=['Rating [kW]', 'Rotor Diam [m]', 'Hub height [m]'])
+    lcoe = aep_tcc.merge(bos_sum, on=['Rating [kW]', 'Hub height [m]'])
 
     if len(bos_sum) == 0:
         raise Exception('bos_sum is empty.')
