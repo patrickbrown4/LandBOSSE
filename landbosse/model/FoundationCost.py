@@ -28,6 +28,7 @@ class FoundationCost(CostModule):
     * [Get region]
     * Get rotor diameter
     * Get hub height
+    * Get hub height
     * Get turbine rating
     * Get buoyant foundation design flag
     * [Get seismic zone]
@@ -749,14 +750,6 @@ class FoundationCost(CostModule):
             'variable_df_key_col_name': 'steel_mass_short_ton_per_turbine',
             'value': self.output_dict['steel_mass_short_ton_per_turbine']
         })
-        # foundation_volume_concrete_m3_per_turbine
-        result.append({
-            'unit': 'm^3',
-            'type': 'variable',
-            'variable_df_key_col_name': 'foundation_volume_concrete_m3_per_turbine',
-            'value': self.output_dict['foundation_volume_concrete_m3_per_turbine']
-        })
-
         for row in self.output_dict['operation_data_id_days_crews_workers'].itertuples():
             dashed_row = '{}-{}-{}-{}'.format(row[1], math.ceil(row[2]), row[3], row[4])
             result.append({
