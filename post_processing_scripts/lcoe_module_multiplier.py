@@ -1,42 +1,22 @@
 import pandas as pd
 
 
-def preprocess_bos_module_cost(df, module_name, multiplier):
-    """
-    Preprocesses ALL line items for a specific module in a BOS cost dataframe
-    by applying a multiplier for all types of costs. It also adds a column
-    called f'{module_name} multiplier' that notes the multiplier of that module.
-
-    It appends the new dataframe onto the old dataframe.
-
-    Parameters
-    ----------
-    df: pd.DataFrame
-        The dataframe with all the cost data. It will be left unmodified
-
-    module_name: str
-        The name of a module, like FoundationCost or ErectionCost
-
-    multiplier: float
-        The multiplier to place on every cost
-
-    Returns
-    -------
-    pd.DataFrame
-        The dataframe with the column added
-    """
-    module_multiplier_column_name = f'{module_name} multiplier'
-
+def preprocess_bos_module_cost(df):
     original = df.copy()
-    original[module_multiplier_column_name] = 1.0
+    original['Modifications'] = 'Conventional'
 
     modified_list = []
-    for _, row in original.iterrows():
-        new_row = row.copy()
-        new_row[module_multiplier_column_name] = multiplier
-        if new_row['Module'] == module_name:
-            new_row['Cost per project'] *= multiplier
-        modified_list.append(new_row)
+
+    for module_alias in ['Erection', 'Foundation']:
+        print(f'Modifying for 50% {module_alias}')
+        module = f'{module_alias}Cost'
+        for _, row in original.iterrows():
+            new_row = row.copy()
+            new_row['Modifications'] = f'{module_alias} 50%'
+            if new_row['Module'] == module:
+                new_row['Cost per project'] *= 0.5
+            modified_list.append(new_row)
+
     modified = pd.DataFrame(modified_list)
     result = original.append(modified, sort=False, ignore_index=True)
     return result
@@ -59,7 +39,7 @@ def main():
 
     # Pre-process the BOS model cost
     print(f'Modifying BOS data for 50% foundation cost. Original row count {len(bos)}')
-    bos = preprocess_bos_module_cost(bos, 'FoundationCost', 0.5)
+    bos = preprocess_bos_module_cost(bos)
     print(f'Done modifying BOS data. New row count {len(bos)}')
 
     bos['Rating [kW]'] = bos['Turbine rating MW'] * 1000
@@ -74,7 +54,7 @@ def main():
     print('Aggregating BOS costs...')
     bos_sum = bos.groupby(
         ['Rating [kW]', 'Rotor Diam [m]', 'Number of turbines', 'Hub height [m]', 'Labor cost multiplier',
-         'Crane breakdown fraction', 'FoundationCost multiplier']).sum().reset_index()
+         'Crane breakdown fraction', 'Modifications']).sum().reset_index()
 
     # Inner join AEP and TCC. Taken together, Rating [kW] and Rotor Diam [m] and Hub height [m]
     # are the key.
@@ -83,6 +63,8 @@ def main():
 
     if len(aep_tcc) == 0:
         raise Exception('aep_tcc merge is empty')
+    else:
+        print(f'aep_tcc {len(aep_tcc)} rows')
 
     # Then join in the BOS sum data, again using Rating [kW] and
     # Rotor Diam [m] as keys. This dataframe will eventually have the
