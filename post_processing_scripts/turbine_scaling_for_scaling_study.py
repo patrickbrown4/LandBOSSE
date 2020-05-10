@@ -19,7 +19,8 @@ rotor_diameter = np.array([91.0, 117.0, 105.0, 139.0, 166.0, 182.0, 235.0]) # m
 hub_height = np.array([80.0, 90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 160.0, 180.0]) # m
 constant_specific_power = 230.0 # W / m^2
 
-blade_mass_exp = np.arange(1.7, 2.41, 0.1)
+# blade_mass_exp = np.arange(1.7, 2.41, 0.1)
+blade_mass_exp = np.array([1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4])
 max_tip_speed  = 90.0 # m/s
 opt_tsr        = 9.0  # Optimal tip speed ratio
 max_Cp         = 0.49 
@@ -29,13 +30,12 @@ cut_in         = 4.0 # m
 cut_out        = 25.0 # m
 altitude       = 0.0
 rho_air        = 1.225 # kg/m^3
-shear_exp      = 0.0 # No variation in z-height
+shear_exp      = 0.2
 array_losses   = 0.0 # Focusing on single turbine
 availability   = 1.0
 soiling_losses = 0.0
 turbine_number = 1
 weibull_k      = 2.0
-# wind_speed     = np.arange(5.0, 15.1, 1.0) # m/s
 wind_speed     = np.array([5.0, 6.0, 7.5, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0]) # m/s
 
 # Output containers
@@ -60,7 +60,7 @@ for irating, rating in enumerate(machine_rating):
         if constant_specific_power - 5 < specific_power < constant_specific_power + 5:
             for ihh, hh in enumerate(hub_height):
                 print(f'TR={rating} RD={diam}, HH={hh}, HH-RD/2={hh - diam / 2.0}')
-                if hh >= (diam / 2.0) + 12.5:
+                if hh >= (diam / 2.0) + 10:
                     print(f'Calculating TR={rating} RD={diam} HH={hh} specific power={specific_power}')
 
                     for iexp, bexp in enumerate(blade_mass_exp):
